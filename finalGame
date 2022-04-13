@@ -1,0 +1,133 @@
+'''
+Game General Rules and Info:
+- 8 rounds
+- For each round, each team rolls 8 dice
+- Combinations:
+  - 4 of a kind = 10 point bonus
+  - 5 of a kind = 20 point bonus
+  - >40 points = skip next turn
+  
+- Each team's points are added up as the game progresses
+- At the end of the game, whoever has the most points wins
+- If the game results in a tie, a coin flip determines which team is the winner and loser
+'''
+
+import random
+
+class Team:
+    def __init__(self, teamName):
+        self.teamName = teamName
+        self.points = 0
+        self.roundsPlayed = 0
+        self.currentRoundPoints = 0
+        self.teamMembers = list()
+
+    def addTeamMembers(self, name):
+        self.teamMembers.append(name)
+
+    def printTeamMembers(self):
+        for names in self.teamMembers:
+            print(names)
+    
+    def calculateSkipTurn(self, roundPoints):
+        if roundPoints <= 40:
+            return roundPoints
+        else:
+            return 0
+        
+    def calculateDiceScore(self):
+        eachRoll = list()
+        for n in range(9):
+            rand = int(random.random() * 6) + 1
+            eachRoll.append(rand)
+        return eachRoll
+            
+    def recordRoundScore(self, bonusPoints, total):
+        if bonusPoints >= 10:
+            print(f"Team {self.teamName} Round {self.roundsPlayed} Points: {total} (Total: {self.points}) Bonus Added")
+        else :
+            print(f"Team {self.teamName} Round {self.roundsPlayed} Points: {total} (Total: {self.points})")
+    
+    def eachRound(self):
+        '''Performs the action of rolling the 8 dice, checking any combinations,
+        and adding to the total point count for each team'''
+        total = 0
+        
+        #8 rolls, append each roll to the list
+        eachDiceRoll = self.calculateDiceScore()
+        
+        #add up any bonus points for combinations
+        bonusPoints = combinations(eachDiceRoll)
+        total += bonusPoints
+        
+        #add up the total points from the round
+        for p in eachDiceRoll:
+            total += p
+            
+        #handle 'skip turn' rule for total greater than 40; one of the three combinations
+        self.points += self.calculateSkipTurn(total)
+        
+        self.roundsPlayed += 1
+        
+        #updates the current round's points total
+        self.currentRoundPoints = total
+        
+        #prints the points each team earned as well as their total points
+        self.recordRoundScore(bonusPoints, total)
+
+def combinations(rollsList):
+    '''Checks the passed list to see if there are any combinations
+   which would reward bonus points'''
+    totalBonus = 0
+    for sides in range(1, 7):
+        #four of a kind - 10 points
+        if rollsList.count(sides) >= 4:
+            totalBonus += 10
+        #five of a kind - 20 points
+        if rollsList.count(sides) >= 5:
+            totalBonus += 20
+        if rollsList.count(sides) < 4:
+            totalBonus = 0
+    return totalBonus
+
+def determineWinner(t1, t2):
+    '''Checks to see which team wins, depending on who has the higher
+   point count. A toin coss is performed if there is a tiebreaker'''
+    #checks if team 1 won
+    if t1.points > t2.points:
+        print(f"Team {t1.teamName} Wins!")
+    
+    #checks if team 2 won
+    elif t1.points < t2.points:
+        print(f"Team {t2.teamName} Wins!")
+        
+    #checks if there's a tie - coin toss to decide winner
+    else:
+        print('It is a tie. Performing coin toss to determine winner...')
+        rand = int(random.random() * 2)
+        if rand == 0: #if random num is 0, team 1 is the winner
+            print(f"Team {t1.teamName} Wins!")
+        else: #if random num is 1, team 2 is the winner
+            print(f"Team {t2.teamName} Wins!")
+            
+
+def main():
+    team1Name = input("Enter Team 1's Name: ")
+    team2Name = input("Enter Team 2's Name: ")
+    team1 = Team(team1Name)
+    team2 = Team(team2Name)
+    while team1.roundsPlayed != 8 or team2.roundsPlayed != 8:
+        if team1.roundsPlayed != 0 and team2.roundsPlayed != 0:
+            input("Press enter to play next round")
+        team1.eachRound()
+        team2.eachRound()
+        if team1.currentRoundPoints >= team2.currentRoundPoints:
+            print(f"Team {team1.teamName} Wins Round {team1.roundsPlayed}")
+        else:
+            print(f"Team {team2.teamName} Wins Round {team2.roundsPlayed}")
+        if team1.roundsPlayed >= 8 or team2.roundsPlayed >= 8:
+            break
+    determineWinner(team1, team2)
+
+if __name__ == '__main__':
+    main() 
